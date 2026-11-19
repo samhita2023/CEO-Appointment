@@ -1,0 +1,1932 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Office of the Chief Executive Officer — Live Status & Same-Day Appointment Portal</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'sans-serif'],
+            display: ['Inter', 'sans-serif'],
+          },
+          colors: {
+            navy: {
+              800: '#162447',
+              900: '#0f172a',
+              950: '#090d16',
+            }
+          }
+        }
+      }
+    };
+  </script>
+  <style>
+    body {
+      font-family: 'Inter', sans-serif;
+      background-color: #f1f5f9;
+      color: #0f172a;
+    }
+    @keyframes pulseRing {
+      0% { transform: scale(0.85); opacity: 0.9; }
+      70% { transform: scale(1.85); opacity: 0; }
+      100% { transform: scale(1.85); opacity: 0; }
+    }
+    .status-pulse::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      border-radius: 9999px;
+      background-color: currentColor;
+      animation: pulseRing 2s cubic-bezier(0.24, 0, 0.38, 1) infinite;
+    }
+    @media print {
+      body * {
+        visibility: hidden !important;
+      }
+      #printable-eod-report, #printable-eod-report * {
+        visibility: visible !important;
+      }
+      #printable-eod-report {
+        position: absolute !important;
+        left: 0 !important;
+        top: 0 !important;
+        width: 100% !important;
+        background: #ffffff !important;
+        padding: 16px !important;
+        margin: 0 !important;
+        box-shadow: none !important;
+        border: none !important;
+      }
+      .no-print {
+        display: none !important;
+      }
+    }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col antialiased selection:bg-indigo-600 selection:text-white">
+
+  <!-- ===================================================================== -->
+  <!-- EMBEDDED SOURCE-CODE STATE (Updated when Receptionist exports HTML)    -->
+  <!-- ===================================================================== -->
+  <script type="application/json" id="embedded-app-state">
+{
+  "activeDate": "",
+  "officeTitle": "Office of the Chief Executive Officer",
+  "ceoName": "Chief Executive Officer",
+  "ceoStatus": "Available",
+  "statusNote": "Accepting scheduled & same-day vendor appointments.",
+  "lastUpdated": "",
+  "blockedSlots": [],
+  "bookings": []
+}
+  </script>
+
+  <!-- Toast Notification Container -->
+  <div id="toast-container" class="fixed bottom-5 right-5 z-50 flex flex-col gap-2 max-w-sm w-full pointer-events-none px-4 sm:px-0 no-print"></div>
+
+  <!-- ===================================================================== -->
+  <!-- 1. SHARED HEADER & NAVIGATION                                         -->
+  <!-- ===================================================================== -->
+  <header class="bg-navy-950 text-white border-b border-slate-800 sticky top-0 z-30 no-print">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3.5 flex flex-col items-center justify-center gap-3 text-center">
+      <div class="flex flex-col sm:flex-row items-center justify-center gap-2.5">
+        <div class="w-9 h-9 rounded-xl bg-gradient-to-br from-indigo-500 to-blue-700 flex items-center justify-center shadow-lg shadow-indigo-950/50 shrink-0">
+          <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+          </svg>
+        </div>
+        <div class="text-center">
+          <span class="font-bold text-base sm:text-lg tracking-tight block leading-none">EXECUTIVE DESK</span>
+          <span class="text-[11px] text-slate-400 tracking-wider uppercase font-medium">Same-Day Appointment Portal</span>
+        </div>
+      </div>
+
+      <!-- View Tabs -->
+      <nav class="flex items-center justify-center bg-slate-900/90 p-1 rounded-xl border border-slate-800">
+        <button id="tab-public" type="button" onclick="switchView('public')"
+          class="px-3.5 sm:px-4 py-1.5 rounded-lg text-xs sm:text-sm font-semibold transition-all bg-indigo-600 text-white shadow">
+          Visitor Portal
+        </button>
+        <button id="tab-reception" type="button" onclick="switchView('reception')"
+          class="px-3.5 sm:px-4 py-1.5 rounded-lg text-xs sm:text-sm font-semibold transition-all text-slate-300 hover:text-white flex items-center gap-1.5">
+          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+          </svg>
+          <span>Receptionist</span>
+        </button>
+      </nav>
+    </div>
+  </header>
+
+  <!-- Shared Office Title, Live Clock Pill & Timings Notice -->
+  <section class="bg-gradient-to-r from-navy-900 via-navy-800 to-slate-900 text-white border-b border-slate-800 shadow-md no-print">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-7">
+      <div class="flex flex-col items-center justify-center text-center space-y-2.5">
+        <div class="inline-flex flex-wrap items-center justify-center gap-2 px-3.5 py-1 rounded-full bg-white/10 border border-white/10 text-xs font-medium text-indigo-200">
+          <svg class="w-3.5 h-3.5 text-indigo-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+          </svg>
+          <span>TODAY'S CYCLE ONLY: <strong id="header-date-display" class="text-white font-semibold">--</strong></span>
+          <span class="text-slate-400">|</span>
+          <span id="header-clock-display" class="font-mono text-white">--:--:--</span>
+          <span class="text-slate-400 hidden sm:inline">|</span>
+          <span id="header-persistence-badge" class="hidden sm:inline-flex items-center gap-1 text-emerald-300 font-semibold">Central HTML File Only</span>
+        </div>
+
+        <h1 id="header-office-title" class="text-2xl sm:text-3xl font-extrabold tracking-tight text-white text-center">
+          Office of the Chief Executive Officer
+        </h1>
+
+        <div class="text-sm max-w-2xl mx-auto text-center space-y-1">
+          <p class="text-red-400 font-bold">Advance bookings for future dates are disabled.</p>
+          <p class="text-slate-300 font-normal">Office timings (9:30 AM - 5:30 PM)</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Main Content Container -->
+  <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8">
+
+    <!-- =================================================================== -->
+    <!-- 2. VISITOR PORTAL (CLEAN PUBLIC BOOKING & LIVE STATUS ONLY)          -->
+    <!-- =================================================================== -->
+    <div id="view-public" class="space-y-8 no-print">
+
+      <!-- Public CEO Live Office Status Badge / Card & Public Status Note -->
+      <div class="max-w-xl mx-auto w-full">
+        <div id="status-banner-card" class="rounded-2xl p-5 sm:p-6 border transition-all duration-300 bg-white border-emerald-300 shadow-sm flex flex-col items-center justify-center text-center">
+          <div class="flex items-center justify-center gap-2 mb-1.5">
+            <span class="text-[11px] font-bold uppercase tracking-widest text-slate-500">CEO Live Office Status</span>
+            <span class="text-slate-300">•</span>
+            <span id="status-updated-time" class="text-[11px] text-slate-400">Live Sync</span>
+          </div>
+          <div class="flex items-center justify-center gap-3 my-1">
+            <span id="status-dot" class="relative w-3.5 h-3.5 rounded-full bg-emerald-500 text-emerald-500 status-pulse shrink-0"></span>
+            <span id="status-label" class="text-2xl sm:text-3xl font-extrabold tracking-tight text-emerald-700">Available</span>
+          </div>
+          <p id="status-subtext" class="text-xs sm:text-sm text-slate-600 mt-2 leading-relaxed text-center max-w-md">
+            Accepting scheduled &amp; same-day vendor appointments.
+          </p>
+        </div>
+      </div>
+
+      <!-- Lockout Banner (Shown whenever CEO status is NOT 'Available') -->
+      <div id="lockout-alert" class="hidden rounded-2xl border-2 p-5 sm:p-6 shadow-sm transition-all text-center">
+        <div class="flex flex-col items-center justify-center gap-2.5 max-w-2xl mx-auto">
+          <div id="lockout-icon-wrap" class="w-11 h-11 rounded-2xl flex items-center justify-center shrink-0">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+            </svg>
+          </div>
+          <div>
+            <h2 id="lockout-title" class="text-lg font-bold">New Public Bookings Locked</h2>
+            <p id="lockout-message" class="text-sm mt-1">
+              Public slot reservations are currently disabled while the CEO is unavailable.
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+
+        <!-- Left Column (7 cols): Same-Day Slot Picker & Visitor Booking Form -->
+        <div class="lg:col-span-7 space-y-6">
+          <div class="bg-white rounded-2xl border border-slate-200/90 shadow-sm overflow-hidden">
+            <div class="px-6 py-5 border-b border-slate-100 flex flex-wrap items-center justify-between gap-2 bg-slate-50/60">
+              <div>
+                <h2 class="text-lg font-bold text-slate-900">Book Same-Day Appointment</h2>
+                <p class="text-xs text-slate-500 mt-0.5">Select an open 30-minute slot for today (9:30 AM – 5:30 PM).</p>
+              </div>
+              <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg bg-indigo-50 text-indigo-700 border border-indigo-200 text-xs font-semibold">
+                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                <span id="locked-date-text">Today Only</span>
+              </span>
+            </div>
+
+            <form id="public-booking-form" onsubmit="handlePublicBookingSubmit(event)" class="p-6 space-y-6">
+
+              <!-- Step 1: Time Slot Selection -->
+              <div>
+                <div class="flex flex-wrap items-center justify-between gap-2 mb-3">
+                  <label class="block text-sm font-semibold text-slate-800">
+                    1. Select Today's Time Slot <span class="text-rose-500">*</span>
+                  </label>
+                  <div class="flex items-center gap-3 text-[11px] font-medium text-slate-500">
+                    <span class="flex items-center gap-1"><span class="w-2.5 h-2.5 rounded-sm bg-white border border-slate-300 inline-block"></span> Open</span>
+                    <span class="flex items-center gap-1"><span class="w-2.5 h-2.5 rounded-sm bg-indigo-600 inline-block"></span> Selected</span>
+                    <span class="flex items-center gap-1"><span class="w-2.5 h-2.5 rounded-sm bg-slate-200 inline-block"></span> Unavailable</span>
+                  </div>
+                </div>
+                <div id="public-slot-grid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2.5"></div>
+                <input type="hidden" id="selected-slot-input" required />
+              </div>
+
+              <!-- Step 2: Visitor / Vendor Details -->
+              <div class="pt-2 border-t border-slate-100 space-y-4">
+                <h3 class="text-sm font-semibold text-slate-800">2. Visitor / Vendor Details</h3>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div>
+                    <label for="visitor-name" class="block text-xs font-semibold text-slate-700 mb-1.5">
+                      Visitor / Vendor Name <span class="text-rose-500">*</span>
+                    </label>
+                    <input type="text" id="visitor-name" required placeholder="e.g., Ananya Kulkarni"
+                      class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 disabled:bg-slate-100 disabled:text-slate-400" />
+                  </div>
+                  <div>
+                    <label for="visitor-company" class="block text-xs font-semibold text-slate-700 mb-1.5">
+                      Company / Organization <span class="text-rose-500">*</span>
+                    </label>
+                    <input type="text" id="visitor-company" required placeholder="e.g., Horizon Industrial Systems"
+                      class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 disabled:bg-slate-100 disabled:text-slate-400" />
+                  </div>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div>
+                    <label for="visitor-contact" class="block text-xs font-semibold text-slate-700 mb-1.5">
+                      Phone or Email <span class="text-rose-500">*</span>
+                    </label>
+                    <input type="text" id="visitor-contact" required placeholder="e.g., +91 98200 11223 / name@org.com"
+                      class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 disabled:bg-slate-100 disabled:text-slate-400" />
+                  </div>
+                  <div>
+                    <label for="slot-select-dropdown" class="block text-xs font-semibold text-slate-700 mb-1.5">
+                      Preferred Today's Time Slot
+                    </label>
+                    <select id="slot-select-dropdown" onchange="syncSlotFromDropdown(this.value)"
+                      class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-sm bg-slate-50 font-medium text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500 disabled:bg-slate-100 disabled:text-slate-400">
+                      <option value="">-- Choose an open slot --</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div>
+                  <label for="visitor-purpose" class="block text-xs font-semibold text-slate-700 mb-1.5">
+                    Purpose of Visit / Agenda <span class="text-rose-500">*</span>
+                  </label>
+                  <textarea id="visitor-purpose" rows="3" required placeholder="Describe the meeting topic, proposal, or vendor agenda..."
+                    class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 disabled:bg-slate-100 disabled:text-slate-400"></textarea>
+                </div>
+              </div>
+
+              <div class="pt-2">
+                <button type="submit" id="public-submit-btn"
+                  class="w-full py-3.5 px-6 rounded-xl bg-navy-900 hover:bg-indigo-700 text-white font-semibold text-sm shadow-md transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-navy-900">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+                  </svg>
+                  <span>Confirm Same-Day Appointment</span>
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+
+        <!-- Right Column (5 cols): Live Today's Schedule Board -->
+        <div class="lg:col-span-5 space-y-6">
+          <div class="bg-white rounded-2xl border border-slate-200/90 shadow-sm overflow-hidden">
+            <div class="px-6 py-5 border-b border-slate-100 bg-slate-50/60 flex items-center justify-between gap-2">
+              <div>
+                <h2 class="text-lg font-bold text-slate-900">Today's Schedule Board</h2>
+                <p class="text-xs text-slate-500 mt-0.5">Live slot status &amp; booked appointment schedule.</p>
+              </div>
+              <span id="board-occupancy-badge" class="px-2.5 py-1 rounded-full bg-slate-200/80 text-slate-700 text-xs font-bold shrink-0">0 / 16 Occupied</span>
+            </div>
+            <div id="public-schedule-board" class="divide-y divide-slate-100 max-h-[560px] overflow-y-auto"></div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Centered Bottom Single-Day Cycle Policy Card -->
+      <div class="bg-white rounded-2xl border border-slate-200/90 p-5 sm:p-6 shadow-sm text-center flex flex-col items-center justify-center gap-3">
+        <div class="space-y-1 text-center">
+          <h3 class="text-xs font-bold uppercase tracking-wider text-slate-500">Single-Day Cycle Policy</h3>
+          <p class="text-sm text-red-600 font-bold">Advance bookings for future dates are disabled.</p>
+          <p class="text-sm text-slate-600 font-normal">Office timings (9:30 AM - 5:30 PM)</p>
+        </div>
+        <button type="button" onclick="syncFromEmbeddedSource()"
+          class="px-4 py-2 rounded-xl border border-slate-300 hover:bg-slate-50 text-xs font-semibold text-slate-700 flex items-center gap-1.5 transition shrink-0">
+          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+          </svg>
+          <span>Refresh Live Status</span>
+        </button>
+      </div>
+
+    </div>
+
+    <!-- =================================================================== -->
+    <!-- 3. RECEPTIONIST PORTAL (PIN: 1234 + FULL DESK CONTROLS)           -->
+    <!-- =================================================================== -->
+    <div id="view-reception" class="hidden space-y-8">
+
+      <!-- PIN Gate Card -->
+      <div id="reception-pin-gate" class="max-w-md mx-auto bg-white rounded-2xl border border-slate-200 shadow-md p-6 sm:p-8 text-center space-y-5 no-print">
+        <div class="w-14 h-14 rounded-2xl bg-indigo-50 text-indigo-600 border border-indigo-100 flex items-center justify-center mx-auto">
+          <svg class="w-7 h-7" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+          </svg>
+        </div>
+        <div>
+          <h2 class="text-xl font-extrabold text-slate-900">Receptionist Portal Access</h2>
+          <p class="text-xs text-slate-500 mt-1">Enter the 4-digit desk PIN to manage live CEO status, check-ins, remarks, and reports.</p>
+        </div>
+        <form onsubmit="verifyReceptionPin(event)" class="space-y-4">
+          <input type="password" id="reception-pin-input" maxlength="8" inputmode="numeric" required placeholder="Enter PIN (default: 1234)"
+            class="w-full px-4 py-3 rounded-xl border border-slate-300 text-center font-mono text-lg tracking-widest focus:outline-none focus:ring-2 focus:ring-indigo-500" />
+          <p id="pin-error-msg" class="hidden text-xs font-semibold text-rose-600">Incorrect PIN. Please try again.</p>
+          <button type="submit" class="w-full py-3 rounded-xl bg-navy-900 hover:bg-indigo-700 text-white font-semibold text-sm transition shadow">
+            Unlock Reception Desk
+          </button>
+        </form>
+      </div>
+
+      <!-- Unlocked Receptionist Workspace -->
+      <div id="reception-dashboard" class="hidden space-y-8">
+
+        <!-- TOP BLOCK: CEO Office Control & Live Publishing -->
+        <div class="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm space-y-5 no-print">
+          <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 pb-4 border-b border-slate-100">
+        <div>
+          <p class="text-[11px] font-bold uppercase tracking-widest text-indigo-600">CEO Office Control &amp; Live Publishing</p>
+          <h2 class="text-lg sm:text-xl font-extrabold text-slate-900 mt-0.5">Live CEO Status &amp; Source-Code Publishing</h2>
+          <p class="text-xs text-slate-500 mt-0.5">
+            Public bookings remain <strong>OPEN</strong> for <strong>Available</strong>, <strong>Busy</strong>, and <strong>On Telephone</strong>, and lock <strong>ONLY</strong> when set to <strong>Out of Office</strong>. Export HTML to publish globally.
+          </p>
+          <p id="reception-persistence-status" class="text-[11px] font-semibold text-emerald-700 mt-1.5">
+            Stored solely in HTML file (#embedded-app-state) • No browser storage • Never resets automatically • Reset only on click
+          </p>
+        </div>
+        <div class="flex flex-wrap items-center gap-2.5 shrink-0">
+              <button type="button" onclick="exportUpdatedHtmlFile()"
+                class="px-4 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold shadow-sm flex items-center gap-1.5 transition">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                </svg>
+                <span>Save &amp; Download Updated index.html</span>
+              </button>
+              <button id="btn-reset-fresh-day" type="button" onclick="handleFreshDayResetClick()"
+                class="px-3.5 py-2.5 rounded-xl border border-amber-300 bg-amber-50 hover:bg-amber-100 text-amber-900 text-xs font-semibold transition">
+                Reset / Start Fresh
+              </button>
+              <button type="button" onclick="lockReceptionDesk()"
+                class="px-3.5 py-2.5 rounded-xl border border-slate-300 hover:bg-slate-50 text-slate-700 text-xs font-semibold transition">
+                Lock Reception Desk
+              </button>
+            </div>
+          </div>
+
+          <!-- Two-Step Confirmation Bar for Fresh Day Reset (prevents accidental clicks) -->
+          <div id="fresh-day-confirm-bar" class="hidden rounded-xl bg-amber-50 border border-amber-300 px-4 py-3 flex flex-wrap items-center justify-between gap-3 text-xs text-amber-950">
+            <div>
+              <strong>Reset / Start Fresh now?</strong> This will clear all bookings, check-ins, early entry tags, visitor out remarks, and blocked slots, and reset CEO status to <strong>Available</strong>. (Download <code>index.html</code> first to keep an archive, and download again after resetting to publish the clean file.)
+            </div>
+            <div class="flex items-center gap-2 shrink-0">
+              <button type="button" onclick="confirmFreshDayReset()"
+                class="px-3.5 py-1.5 rounded-lg bg-amber-700 hover:bg-amber-800 text-white font-bold transition">
+                Yes, Reset / Start Fresh
+              </button>
+              <button type="button" onclick="cancelFreshDayReset()"
+                class="px-3.5 py-1.5 rounded-lg border border-amber-400 bg-white hover:bg-amber-100 text-amber-900 font-semibold transition">
+                Cancel
+              </button>
+            </div>
+          </div>
+
+          <!-- 4 Interactive Status Cards -->
+          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            <button id="btn-status-Available" type="button" onclick="setCeoStatus('Available')"
+              class="p-4 rounded-2xl border-2 text-left transition-all flex flex-col justify-between gap-3 bg-white">
+              <div class="flex items-center justify-between">
+                <span class="w-3.5 h-3.5 rounded-full bg-emerald-500"></span>
+                <span class="text-[10px] font-bold uppercase tracking-wider px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800">BOOKINGS OPEN</span>
+              </div>
+              <div>
+                <div class="font-extrabold text-base text-slate-900">Available</div>
+                <div class="text-xs text-slate-500 mt-0.5">CEO is free • Accepting same-day bookings</div>
+              </div>
+            </button>
+
+            <button id="btn-status-Busy" type="button" onclick="setCeoStatus('Busy')"
+              class="p-4 rounded-2xl border-2 text-left transition-all flex flex-col justify-between gap-3 bg-white">
+              <div class="flex items-center justify-between">
+                <span class="w-3.5 h-3.5 rounded-full bg-amber-500"></span>
+                <span class="text-[10px] font-bold uppercase tracking-wider px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800">BOOKINGS OPEN</span>
+              </div>
+              <div>
+                <div class="font-extrabold text-base text-slate-900">Busy</div>
+                <div class="text-xs text-slate-500 mt-0.5">With visitors / in meeting • Bookings open</div>
+              </div>
+            </button>
+
+            <button id="btn-status-On Telephone" type="button" onclick="setCeoStatus('On Telephone')"
+              class="p-4 rounded-2xl border-2 text-left transition-all flex flex-col justify-between gap-3 bg-white">
+              <div class="flex items-center justify-between">
+                <span class="w-3.5 h-3.5 rounded-full bg-sky-500"></span>
+                <span class="text-[10px] font-bold uppercase tracking-wider px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800">BOOKINGS OPEN</span>
+              </div>
+              <div>
+                <div class="font-extrabold text-base text-slate-900">On Telephone</div>
+                <div class="text-xs text-slate-500 mt-0.5">On a call • Public bookings open</div>
+              </div>
+            </button>
+
+            <button id="btn-status-Out of Office" type="button" onclick="setCeoStatus('Out of Office')"
+              class="p-4 rounded-2xl border-2 text-left transition-all flex flex-col justify-between gap-3 bg-white">
+              <div class="flex items-center justify-between">
+                <span class="w-3.5 h-3.5 rounded-full bg-rose-500"></span>
+                <span class="text-[10px] font-bold uppercase tracking-wider px-2.5 py-0.5 rounded-full bg-rose-100 text-rose-800">BOOKINGS LOCKED</span>
+              </div>
+              <div>
+                <div class="font-extrabold text-base text-slate-900">Out of Office</div>
+                <div class="text-xs text-slate-500 mt-0.5">Away today • Bookings locked &amp; day option</div>
+              </div>
+            </button>
+          </div>
+
+          <!-- Out of Office Day Action Banner -->
+          <div id="ooo-day-actions" class="hidden rounded-xl bg-rose-50 border border-rose-200 px-4 py-3 flex flex-wrap items-center justify-between gap-3 text-xs text-rose-950">
+            <div>
+              <strong>CEO is Out of Office for today:</strong> Public bookings are locked. You can also mark remaining open/scheduled same-day appointments as Cancelled &amp; No-Show.
+            </div>
+            <button type="button" onclick="cancelRemainingDayBookings()"
+              class="px-3.5 py-1.5 rounded-lg bg-rose-600 hover:bg-rose-700 text-white font-semibold transition shrink-0">
+              Cancel Remaining Today's Bookings
+            </button>
+          </div>
+
+          <!-- Public Status Banner Note Editor -->
+          <div class="pt-3 border-t border-slate-100 space-y-2">
+            <label for="rec-status-note-input" class="block text-xs font-bold uppercase tracking-wider text-slate-600">
+              Public Status Banner Note
+            </label>
+            <div class="flex flex-col sm:flex-row gap-2.5">
+              <input type="text" id="rec-status-note-input" placeholder="Custom status note shown on Visitor Portal..."
+                class="flex-1 px-3.5 py-2.5 rounded-xl border border-slate-300 text-xs focus:outline-none focus:ring-2 focus:ring-indigo-500" />
+              <button type="button" onclick="updateStatusNote()"
+                class="px-4 py-2.5 rounded-xl bg-navy-900 hover:bg-slate-800 text-white text-xs font-semibold shrink-0 transition">
+                Update Public Note
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- MIDDLE BLOCK: Today's Appointments & Walk-In / Arrival Check-In -->
+        <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden no-print">
+          <div class="px-6 py-5 border-b border-slate-100 bg-slate-50/70 flex flex-wrap items-center justify-between gap-3">
+            <div>
+              <h2 class="text-lg font-extrabold text-slate-900">Today's Appointments &amp; Walk-In / Arrival Check-In</h2>
+              <p class="text-xs text-slate-500">Prefill from a booked slot on arrival, admit early before scheduled time, log walk-ins, update status, and record visitor out remarks.</p>
+            </div>
+            <div class="flex items-center gap-2 text-xs font-semibold">
+              <span id="stat-pill-total" class="px-3 py-1 rounded-full bg-slate-200/80 text-slate-700">Total: 0</span>
+              <span id="stat-pill-done" class="px-3 py-1 rounded-full bg-emerald-100 text-emerald-800">Completed: 0</span>
+            </div>
+          </div>
+
+          <!-- Walk-In / Arrival Check-In Form with Prefill & Early Entry -->
+          <div class="p-6 bg-slate-50/40 border-b border-slate-200/80 space-y-4">
+            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+              <h3 class="text-xs font-bold uppercase tracking-wider text-slate-600">+ Walk-In / Arrival Check-In</h3>
+              <div class="flex flex-wrap items-center gap-2">
+                <label for="prefill-booked-slot-select" class="text-[11px] font-semibold text-indigo-700">Prefill from Booked Slot:</label>
+                <select id="prefill-booked-slot-select" onchange="prefillFormFromBookedId(this.value)"
+                  class="px-3 py-1.5 rounded-lg border border-indigo-200 bg-indigo-50/70 text-xs font-semibold text-indigo-900 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                  <option value="">-- Select Booked Appointment on Arrival --</option>
+                </select>
+                <button type="button" onclick="clearEntryFormPrefill()"
+                  class="px-2.5 py-1.5 rounded-lg border border-slate-300 bg-white hover:bg-slate-100 text-[11px] font-semibold text-slate-600 transition">
+                  Clear / New Walk-In
+                </button>
+              </div>
+            </div>
+
+            <div id="prefill-active-banner" class="hidden rounded-xl bg-indigo-50 border border-indigo-200 px-3.5 py-2.5 flex flex-wrap items-center justify-between gap-2 text-xs text-indigo-950">
+              <div>
+                <strong id="prefill-banner-title">Prefilled from Booked Slot</strong>
+                <span id="prefill-banner-meta" class="text-indigo-700 ml-1"></span>
+              </div>
+              <span class="text-[11px] font-semibold text-indigo-700">Adjust Arrival / Entry Time &amp; submit to admit</span>
+            </div>
+
+            <form id="reception-walkin-form" onsubmit="handleWalkInSubmit(event)" class="space-y-3">
+              <input type="hidden" id="prefill-booking-id" value="" />
+              <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
+                <input type="text" id="walkin-name" required placeholder="Visitor / Vendor Name *"
+                  class="px-3.5 py-2.5 rounded-xl border border-slate-300 bg-white text-xs focus:outline-none focus:ring-2 focus:ring-indigo-500" />
+                <input type="text" id="walkin-company" required placeholder="Company / Organization *"
+                  class="px-3.5 py-2.5 rounded-xl border border-slate-300 bg-white text-xs focus:outline-none focus:ring-2 focus:ring-indigo-500" />
+                <input type="text" id="walkin-contact" required placeholder="Phone or Email *"
+                  class="px-3.5 py-2.5 rounded-xl border border-slate-300 bg-white text-xs focus:outline-none focus:ring-2 focus:ring-indigo-500" />
+                <select id="walkin-slot" required
+                  class="px-3.5 py-2.5 rounded-xl border border-slate-300 bg-white text-xs font-medium focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                  <option value="">Select Slot *</option>
+                </select>
+                <input type="text" id="walkin-purpose" required placeholder="Purpose / Agenda *"
+                  class="px-3.5 py-2.5 rounded-xl border border-slate-300 bg-white text-xs focus:outline-none focus:ring-2 focus:ring-indigo-500" />
+              </div>
+
+              <div class="flex flex-wrap items-center justify-between gap-3 pt-1">
+                <div class="flex flex-wrap items-center gap-3 text-xs">
+                  <label for="walkin-entry-time" class="font-semibold text-slate-700">Arrival / Entry Time:</label>
+                  <input type="time" id="walkin-entry-time"
+                    class="px-3 py-1.5 rounded-lg border border-slate-300 bg-white text-xs font-mono focus:outline-none focus:ring-2 focus:ring-indigo-500" />
+                  <label class="inline-flex items-center gap-1.5 text-slate-700 font-medium cursor-pointer">
+                    <input type="checkbox" id="walkin-set-busy" checked class="rounded border-slate-300 text-indigo-600 focus:ring-indigo-500" />
+                    <span>Mark CEO <strong>Busy</strong> on entry</span>
+                  </label>
+                </div>
+
+                <button type="submit" id="walkin-submit-btn"
+                  class="px-5 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold shrink-0 transition shadow-sm">
+                  Add Walk-In
+                </button>
+              </div>
+            </form>
+          </div>
+
+          <!-- Appointments List with Early Entry, Status & Visitor Out Remark -->
+          <div id="reception-bookings-list" class="divide-y divide-slate-100"></div>
+        </div>
+
+        <!-- LOWER BLOCK 1: Slot Availability Control -->
+        <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden no-print">
+          <div class="px-6 py-5 border-b border-slate-100 bg-slate-50/70 flex flex-wrap items-center justify-between gap-2">
+            <div>
+              <h2 class="text-lg font-extrabold text-slate-900">Slot Availability Control</h2>
+              <p class="text-xs text-slate-500">Block or unblock individual 30-minute slots across today's 9:30 AM – 5:30 PM window.</p>
+            </div>
+            <span class="text-xs font-medium text-slate-500">16 Half-Hour Slots</span>
+          </div>
+          <div id="reception-slot-blocker" class="p-6 grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-2.5"></div>
+        </div>
+
+        <!-- LOWER BLOCK 2: End of the Day Report -->
+        <div id="printable-eod-report" class="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm space-y-6">
+          <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-4 border-b border-slate-100">
+            <div>
+              <p class="text-[11px] font-bold uppercase tracking-widest text-indigo-600">Daily Closure &amp; Audit</p>
+              <h2 class="text-lg sm:text-xl font-extrabold text-slate-900 mt-0.5">End of the Day Report</h2>
+              <p class="text-xs text-slate-500 mt-0.5">
+                Date: <strong id="rep-date-label" class="text-slate-700">--</strong> • Generated: <strong id="rep-time-label" class="text-slate-700">--</strong>
+              </p>
+            </div>
+            <div class="flex flex-wrap items-center gap-2 no-print shrink-0">
+              <button type="button" onclick="refreshEodReport()"
+                class="px-3.5 py-2 rounded-xl bg-navy-900 hover:bg-slate-800 text-white text-xs font-semibold transition">
+                Refresh Report
+              </button>
+              <button type="button" onclick="copyReportToClipboard()"
+                class="px-3.5 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-800 text-xs font-semibold transition">
+                Copy Summary
+              </button>
+              <button type="button" onclick="window.print()"
+                class="px-3.5 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold transition">
+                Print / Save PDF
+              </button>
+            </div>
+          </div>
+
+          <!-- KPI Counters -->
+          <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
+            <div class="p-4 rounded-xl bg-slate-50 border border-slate-200">
+              <div class="text-xs font-semibold text-slate-500">Total Booked</div>
+              <div id="rep-total" class="text-2xl font-extrabold text-slate-900 mt-1">0</div>
+            </div>
+            <div class="p-4 rounded-xl bg-emerald-50 border border-emerald-200">
+              <div class="text-xs font-semibold text-emerald-700">Completed</div>
+              <div id="rep-completed" class="text-2xl font-extrabold text-emerald-800 mt-1">0</div>
+            </div>
+            <div class="p-4 rounded-xl bg-amber-50 border border-amber-200">
+              <div class="text-xs font-semibold text-amber-700">Pending / Scheduled</div>
+              <div id="rep-scheduled" class="text-2xl font-extrabold text-amber-800 mt-1">0</div>
+            </div>
+            <div class="p-4 rounded-xl bg-rose-50 border border-rose-200">
+              <div class="text-xs font-semibold text-rose-700">Cancelled / No-Show</div>
+              <div id="rep-cancelled" class="text-2xl font-extrabold text-rose-800 mt-1">0</div>
+            </div>
+          </div>
+
+          <!-- Detailed Meetings & Visitor Out Remarks Table -->
+          <div>
+            <h3 class="text-sm font-bold text-slate-800 mb-3">Meetings, Entry/Exit Log &amp; Visitor Out Remarks</h3>
+            <div class="overflow-x-auto border border-slate-200 rounded-xl">
+              <table class="w-full text-left border-collapse text-xs">
+                <thead>
+                  <tr class="bg-slate-100 text-slate-700 border-b border-slate-200">
+                    <th class="py-3 px-3.5 font-bold">Time Slot</th>
+                    <th class="py-3 px-3.5 font-bold">Visitor &amp; Company</th>
+                    <th class="py-3 px-3.5 font-bold">Agenda</th>
+                    <th class="py-3 px-3.5 font-bold">Status &amp; Timestamps</th>
+                    <th class="py-3 px-3.5 font-bold">Visitor Out Remark</th>
+                  </tr>
+                </thead>
+                <tbody id="rep-table-body" class="divide-y divide-slate-200"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+  </main>
+
+  <!-- ===================================================================== -->
+  <!-- BOOKING CONFIRMATION MODAL                                            -->
+  <!-- ===================================================================== -->
+  <div id="confirmation-modal" class="fixed inset-0 z-50 hidden bg-slate-950/60 backdrop-blur-sm flex items-center justify-center p-4 no-print">
+    <div class="bg-white rounded-2xl max-w-md w-full p-6 sm:p-8 shadow-2xl border border-slate-100 text-center space-y-5">
+      <div class="w-14 h-14 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center mx-auto">
+        <svg class="w-8 h-8" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+        </svg>
+      </div>
+      <div>
+        <span class="text-[11px] font-bold uppercase tracking-widest text-emerald-700 bg-emerald-50 px-3 py-1 rounded-full">Appointment Confirmed</span>
+        <h3 class="text-xl font-extrabold text-slate-900 mt-3">Same-Day Booking Registered</h3>
+        <p class="text-xs text-slate-500 mt-1">Your appointment has been recorded on today's schedule.</p>
+      </div>
+
+      <div class="bg-slate-50 rounded-xl p-4 border border-slate-200 text-left space-y-2 text-xs">
+        <div class="flex justify-between">
+          <span class="text-slate-500">Booking ID:</span>
+          <span id="conf-id" class="font-mono font-bold text-indigo-700">--</span>
+        </div>
+        <div class="flex justify-between">
+          <span class="text-slate-500">Date:</span>
+          <span id="conf-date" class="font-semibold text-slate-800">--</span>
+        </div>
+        <div class="flex justify-between">
+          <span class="text-slate-500">Time Slot:</span>
+          <span id="conf-slot" class="font-bold text-slate-900">--</span>
+        </div>
+        <div class="flex justify-between">
+          <span class="text-slate-500">Visitor / Company:</span>
+          <span id="conf-visitor" class="font-semibold text-slate-800 text-right">--</span>
+        </div>
+      </div>
+
+      <button type="button" onclick="closeConfirmationModal()" class="w-full py-3 rounded-xl bg-navy-900 hover:bg-slate-800 text-white font-semibold text-sm transition">
+        Done
+      </button>
+    </div>
+  </div>
+
+  <!-- ===================================================================== -->
+  <!-- APPLICATION JAVASCRIPT                                                -->
+  <!-- ===================================================================== -->
+  <script>
+    // 16 Same-Day Slots (9:30 AM to 5:30 PM in 30-minute intervals)
+    const TIME_SLOTS = [
+      "09:30 AM - 10:00 AM",
+      "10:00 AM - 10:30 AM",
+      "10:30 AM - 11:00 AM",
+      "11:00 AM - 11:30 AM",
+      "11:30 AM - 12:00 PM",
+      "12:00 PM - 12:30 PM",
+      "12:30 PM - 01:00 PM",
+      "01:00 PM - 01:30 PM",
+      "01:30 PM - 02:00 PM",
+      "02:00 PM - 02:30 PM",
+      "02:30 PM - 03:00 PM",
+      "03:00 PM - 03:30 PM",
+      "03:30 PM - 04:00 PM",
+      "04:00 PM - 04:30 PM",
+      "04:30 PM - 05:00 PM",
+      "05:00 PM - 05:30 PM"
+    ];
+
+    const RECEPTION_PIN = "1234";
+    let isReceptionUnlocked = false;
+    let isFreshDayConfirmOpen = false;
+    let selectedPublicSlot = "";
+    let appState = null;
+
+    function getTodayDateKey(dateObj = new Date()) {
+      const y = dateObj.getFullYear();
+      const m = String(dateObj.getMonth() + 1).padStart(2, '0');
+      const d = String(dateObj.getDate()).padStart(2, '0');
+      return `${y}-${m}-${d}`;
+    }
+
+    function getCurrentTimeInputValue(dateObj = new Date()) {
+      const hh = String(dateObj.getHours()).padStart(2, '0');
+      const mm = String(dateObj.getMinutes()).padStart(2, '0');
+      return `${hh}:${mm}`;
+    }
+
+    function formatTime24To12(hhmm) {
+      if (!hhmm || !hhmm.includes(':')) return '';
+      const [hStr, mStr] = hhmm.split(':');
+      const h = parseInt(hStr, 10);
+      const m = parseInt(mStr, 10);
+      if (Number.isNaN(h) || Number.isNaN(m)) return hhmm;
+      const period = h >= 12 ? 'PM' : 'AM';
+      const hour12 = h % 12 === 0 ? 12 : h % 12;
+      return `${String(hour12).padStart(2, '0')}:${String(m).padStart(2, '0')} ${period}`;
+    }
+
+    function parseSlotStartMinutes(slot) {
+      if (!slot || !slot.includes(' - ')) return null;
+      const startPart = slot.split(' - ')[0].trim();
+      const match = startPart.match(/^(\d{1,2}):(\d{2})\s*(AM|PM)$/i);
+      if (!match) return null;
+      let hours = parseInt(match[1], 10);
+      const mins = parseInt(match[2], 10);
+      const ampm = match[3].toUpperCase();
+      if (ampm === 'PM' && hours !== 12) hours += 12;
+      if (ampm === 'AM' && hours === 12) hours = 0;
+      return hours * 60 + mins;
+    }
+
+    function timeInputToMinutes(hhmm) {
+      if (!hhmm || !hhmm.includes(':')) return null;
+      const [hStr, mStr] = hhmm.split(':');
+      const h = parseInt(hStr, 10);
+      const m = parseInt(mStr, 10);
+      if (Number.isNaN(h) || Number.isNaN(m)) return null;
+      return h * 60 + m;
+    }
+
+    function evaluateEntryTiming(slot, entryTime24) {
+      const actualLabel = formatTime24To12(entryTime24) || new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+      const slotStartMins = parseSlotStartMinutes(slot);
+      const entryMins = timeInputToMinutes(entryTime24);
+      if (slotStartMins !== null && entryMins !== null && entryMins < slotStartMins) {
+        return {
+          isEarly: true,
+          enteredAt: actualLabel,
+          entryTag: `Entered Early at ${actualLabel} (Scheduled ${slot.split(' - ')[0]})`
+        };
+      }
+      return {
+        isEarly: false,
+        enteredAt: actualLabel,
+        entryTag: `Entered at ${actualLabel} (Slot ${slot})`
+      };
+    }
+
+    function getFormattedDate(dateObj = new Date()) {
+      return dateObj.toLocaleDateString(undefined, {
+        weekday: 'long',
+        year: 'numeric',
+        month: 'short',
+        day: 'numeric'
+      });
+    }
+
+    function createFreshDayState(todayKey) {
+      return {
+        activeDate: todayKey || getTodayDateKey(),
+        officeTitle: "Office of the Chief Executive Officer",
+        ceoName: "Chief Executive Officer",
+        ceoStatus: "Available",
+        statusNote: "Accepting scheduled & same-day vendor appointments.",
+        lastUpdated: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+        blockedSlots: [],
+        bookings: []
+      };
+    }
+
+    function readEmbeddedState() {
+      try {
+        const el = document.getElementById('embedded-app-state');
+        if (!el) return null;
+        return JSON.parse(el.textContent.trim());
+      } catch (err) {
+        console.error("Error parsing embedded state:", err);
+        return null;
+      }
+    }
+
+    function writeEmbeddedStateToDom() {
+      if (!appState) return;
+      const el = document.getElementById('embedded-app-state');
+      if (el) {
+        el.textContent = "\n" + JSON.stringify(appState, null, 2) + "\n  ";
+      }
+    }
+
+    function normalizeEmbeddedState(rawState) {
+      const fresh = createFreshDayState(getTodayDateKey());
+      if (!rawState || typeof rawState !== 'object') {
+        return fresh;
+      }
+      return {
+        ...fresh,
+        ...rawState,
+        activeDate: rawState.activeDate || fresh.activeDate,
+        blockedSlots: Array.isArray(rawState.blockedSlots) ? [...rawState.blockedSlots] : [],
+        bookings: Array.isArray(rawState.bookings) ? [...rawState.bookings] : []
+      };
+    }
+
+    function initState() {
+      // Pure single-file HTML state: read solely from #embedded-app-state (never localStorage)
+      const embedded = readEmbeddedState();
+      appState = normalizeEmbeddedState(embedded);
+      writeEmbeddedStateToDom();
+      updatePersistenceIndicators();
+    }
+
+    function updatePersistenceIndicators() {
+      const headerBadge = document.getElementById('header-persistence-badge');
+      const recStatus = document.getElementById('reception-persistence-status');
+      if (headerBadge) {
+        headerBadge.textContent = "Central HTML State";
+      }
+      if (recStatus) {
+        recStatus.textContent = "Stored solely in HTML file (#embedded-app-state) • No browser storage • Never resets automatically • Reset only on click";
+      }
+    }
+
+    function persistState(updateTimestamp = true) {
+      if (!appState) return;
+      if (!appState.activeDate) {
+        appState.activeDate = getTodayDateKey();
+      }
+      if (updateTimestamp) {
+        appState.lastUpdated = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+      }
+      writeEmbeddedStateToDom();
+      updatePersistenceIndicators();
+    }
+
+    function saveStateToLocal() {
+      persistState(true);
+    }
+
+    function handleFreshDayResetClick() {
+      isFreshDayConfirmOpen = !isFreshDayConfirmOpen;
+      const bar = document.getElementById('fresh-day-confirm-bar');
+      if (bar) {
+        bar.classList.toggle('hidden', !isFreshDayConfirmOpen);
+      }
+    }
+
+    function cancelFreshDayReset() {
+      isFreshDayConfirmOpen = false;
+      const bar = document.getElementById('fresh-day-confirm-bar');
+      if (bar) bar.classList.add('hidden');
+      showToast("Reset cancelled — all current records remain intact.", "info");
+    }
+
+    function confirmFreshDayReset() {
+      isFreshDayConfirmOpen = false;
+      const bar = document.getElementById('fresh-day-confirm-bar');
+      if (bar) bar.classList.add('hidden');
+
+      clearEntryFormPrefill(true);
+      selectedPublicSlot = "";
+      appState = createFreshDayState(getTodayDateKey());
+      persistState(true);
+      renderAll();
+      showToast('State reset to fresh. Click "Save & Download Updated index.html" to publish the clean file.', "success");
+    }
+
+    function syncFromEmbeddedSource() {
+      // Reloads directly from the embedded JSON block in this HTML file (never localStorage)
+      const embedded = readEmbeddedState();
+      appState = normalizeEmbeddedState(embedded);
+      selectedPublicSlot = "";
+      writeEmbeddedStateToDom();
+      renderAll();
+      showToast("Synced with embedded HTML state.", "info");
+    }
+
+    function exportUpdatedHtmlFile() {
+      saveStateToLocal();
+      const docClone = document.documentElement.cloneNode(true);
+
+      const viewPublic = docClone.querySelector('#view-public');
+      const viewReception = docClone.querySelector('#view-reception');
+      const pinGate = docClone.querySelector('#reception-pin-gate');
+      const recDash = docClone.querySelector('#reception-dashboard');
+      const tabPublic = docClone.querySelector('#tab-public');
+      const tabReception = docClone.querySelector('#tab-reception');
+      const confModal = docClone.querySelector('#confirmation-modal');
+      const toastBox = docClone.querySelector('#toast-container');
+
+      if (viewPublic) viewPublic.classList.remove('hidden');
+      if (viewReception) viewReception.classList.add('hidden');
+      if (pinGate) pinGate.classList.remove('hidden');
+      if (recDash) recDash.classList.add('hidden');
+      if (confModal) confModal.classList.add('hidden');
+      if (toastBox) toastBox.innerHTML = '';
+
+      if (tabPublic) {
+        tabPublic.className = "px-3.5 sm:px-4 py-1.5 rounded-lg text-xs sm:text-sm font-semibold transition-all bg-indigo-600 text-white shadow";
+      }
+      if (tabReception) {
+        tabReception.className = "px-3.5 sm:px-4 py-1.5 rounded-lg text-xs sm:text-sm font-semibold transition-all text-slate-300 hover:text-white flex items-center gap-1.5";
+      }
+
+      const stateScript = docClone.querySelector('#embedded-app-state');
+      if (stateScript) {
+        stateScript.textContent = "\n" + JSON.stringify(appState, null, 2) + "\n  ";
+      }
+
+      const htmlContent = "<!DOCTYPE html>\n" + docClone.outerHTML;
+      const blob = new Blob([htmlContent], { type: "text/html;charset=utf-8" });
+      const url = URL.createObjectURL(blob);
+
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = "index.html";
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+
+      showToast("Updated index.html downloaded with live state embedded.", "success");
+    }
+
+    function startLiveClock() {
+      function tick() {
+        const now = new Date();
+        const formattedDate = getFormattedDate(now);
+        const formattedTime = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+
+        const dateEl = document.getElementById('header-date-display');
+        const clockEl = document.getElementById('header-clock-display');
+        const lockedDateEl = document.getElementById('locked-date-text');
+
+        if (dateEl) dateEl.textContent = formattedDate;
+        if (clockEl) clockEl.textContent = formattedTime;
+        if (lockedDateEl) lockedDateEl.textContent = formattedDate;
+        updatePersistenceIndicators();
+      }
+      tick();
+      setInterval(tick, 1000);
+    }
+
+    function switchView(viewName) {
+      const publicView = document.getElementById('view-public');
+      const receptionView = document.getElementById('view-reception');
+      const tabPublic = document.getElementById('tab-public');
+      const tabReception = document.getElementById('tab-reception');
+
+      if (viewName === 'public') {
+        publicView.classList.remove('hidden');
+        receptionView.classList.add('hidden');
+        tabPublic.className = "px-3.5 sm:px-4 py-1.5 rounded-lg text-xs sm:text-sm font-semibold transition-all bg-indigo-600 text-white shadow";
+        tabReception.className = "px-3.5 sm:px-4 py-1.5 rounded-lg text-xs sm:text-sm font-semibold transition-all text-slate-300 hover:text-white flex items-center gap-1.5";
+        renderPublicPortal();
+      } else {
+        publicView.classList.add('hidden');
+        receptionView.classList.remove('hidden');
+        tabReception.className = "px-3.5 sm:px-4 py-1.5 rounded-lg text-xs sm:text-sm font-semibold transition-all bg-indigo-600 text-white shadow flex items-center gap-1.5";
+        tabPublic.className = "px-3.5 sm:px-4 py-1.5 rounded-lg text-xs sm:text-sm font-semibold transition-all text-slate-300 hover:text-white";
+        if (isReceptionUnlocked) {
+          renderReceptionDashboard();
+        }
+      }
+    }
+
+    function verifyReceptionPin(e) {
+      e.preventDefault();
+      const input = document.getElementById('reception-pin-input');
+      const err = document.getElementById('pin-error-msg');
+      if (input.value.trim() === RECEPTION_PIN) {
+        isReceptionUnlocked = true;
+        err.classList.add('hidden');
+        input.value = '';
+        document.getElementById('reception-pin-gate').classList.add('hidden');
+        document.getElementById('reception-dashboard').classList.remove('hidden');
+        renderReceptionDashboard();
+        showToast("Reception Desk unlocked.", "success");
+      } else {
+        err.classList.remove('hidden');
+      }
+    }
+
+    function lockReceptionDesk() {
+      isReceptionUnlocked = false;
+      isFreshDayConfirmOpen = false;
+      const bar = document.getElementById('fresh-day-confirm-bar');
+      if (bar) bar.classList.add('hidden');
+      clearEntryFormPrefill();
+      document.getElementById('reception-pin-gate').classList.remove('hidden');
+      document.getElementById('reception-dashboard').classList.add('hidden');
+      switchView('public');
+      showToast("Reception Desk locked.", "info");
+    }
+
+    function getSlotStatus(slot) {
+      const activeBooking = appState.bookings.find(
+        b => b.slot === slot && b.status !== 'Cancelled'
+      );
+      if (activeBooking) {
+        return { unavailable: true, reason: 'Booked', booking: activeBooking };
+      }
+      if (appState.blockedSlots.includes(slot)) {
+        return { unavailable: true, reason: 'Blocked', booking: null };
+      }
+      return { unavailable: false, reason: 'Open', booking: null };
+    }
+
+    function renderStatusHeaderAndLockout() {
+      const status = appState.ceoStatus;
+      const card = document.getElementById('status-banner-card');
+      const dot = document.getElementById('status-dot');
+      const label = document.getElementById('status-label');
+      const subtext = document.getElementById('status-subtext');
+      const updatedTime = document.getElementById('status-updated-time');
+
+      const lockoutAlert = document.getElementById('lockout-alert');
+      const lockoutIconWrap = document.getElementById('lockout-icon-wrap');
+      const lockoutTitle = document.getElementById('lockout-title');
+      const lockoutMessage = document.getElementById('lockout-message');
+
+      updatedTime.textContent = appState.lastUpdated ? `Updated ${appState.lastUpdated}` : 'Live Sync';
+      label.textContent = status;
+
+      // Public bookings are locked ONLY when CEO status is "Out of Office"
+      const isLocked = status === 'Out of Office';
+
+      if (status === 'Available') {
+        card.className = "rounded-2xl p-5 sm:p-6 border transition-all duration-300 bg-white border-emerald-300 shadow-sm flex flex-col items-center justify-center text-center";
+        dot.className = "relative w-3.5 h-3.5 rounded-full bg-emerald-500 text-emerald-500 status-pulse shrink-0";
+        label.className = "text-2xl sm:text-3xl font-extrabold tracking-tight text-emerald-700";
+        subtext.textContent = appState.statusNote || "Accepting scheduled & same-day vendor appointments.";
+        lockoutAlert.classList.add('hidden');
+      } else if (status === 'Busy') {
+        card.className = "rounded-2xl p-5 sm:p-6 border transition-all duration-300 bg-white border-amber-300 shadow-sm flex flex-col items-center justify-center text-center";
+        dot.className = "relative w-3.5 h-3.5 rounded-full bg-amber-500 text-amber-500 status-pulse shrink-0";
+        label.className = "text-2xl sm:text-3xl font-extrabold tracking-tight text-amber-700";
+        subtext.textContent = appState.statusNote || "CEO is currently Busy with visitors or a meeting. Same-day bookings remain open.";
+        lockoutAlert.classList.add('hidden');
+      } else if (status === 'On Telephone') {
+        card.className = "rounded-2xl p-5 sm:p-6 border transition-all duration-300 bg-white border-sky-300 shadow-sm flex flex-col items-center justify-center text-center";
+        dot.className = "relative w-3.5 h-3.5 rounded-full bg-sky-500 text-sky-500 status-pulse shrink-0";
+        label.className = "text-2xl sm:text-3xl font-extrabold tracking-tight text-sky-700";
+        subtext.textContent = appState.statusNote || "CEO is currently On Telephone. Same-day bookings remain open.";
+        lockoutAlert.classList.add('hidden');
+      } else {
+        card.className = "rounded-2xl p-5 sm:p-6 border transition-all duration-300 bg-white border-rose-300 shadow-sm flex flex-col items-center justify-center text-center";
+        dot.className = "relative w-3.5 h-3.5 rounded-full bg-rose-500 text-rose-500 shrink-0";
+        label.className = "text-2xl sm:text-3xl font-extrabold tracking-tight text-rose-700";
+        subtext.textContent = appState.statusNote || "CEO is Out of Office for today. Public bookings are locked.";
+
+        lockoutAlert.classList.remove('hidden');
+        lockoutAlert.className = "rounded-2xl border-2 p-5 sm:p-6 shadow-sm bg-rose-50 border-rose-300 text-rose-950 text-center";
+        lockoutIconWrap.className = "w-11 h-11 rounded-2xl bg-rose-200/80 text-rose-800 flex items-center justify-center shrink-0 mx-auto";
+        lockoutTitle.textContent = "Public Bookings Locked — CEO is Out of Office";
+        lockoutMessage.textContent = "The CEO is away today. No new public appointments can be booked for today's cycle.";
+      }
+
+      const formIds = ['visitor-name', 'visitor-company', 'visitor-contact', 'slot-select-dropdown', 'visitor-purpose', 'public-submit-btn'];
+      formIds.forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.disabled = isLocked;
+      });
+    }
+
+    function renderPublicPortal() {
+      renderStatusHeaderAndLockout();
+
+      const isCeoLocked = appState.ceoStatus === 'Out of Office';
+      const slotGrid = document.getElementById('public-slot-grid');
+      const dropdown = document.getElementById('slot-select-dropdown');
+      const scheduleBoard = document.getElementById('public-schedule-board');
+
+      if (selectedPublicSlot) {
+        const check = getSlotStatus(selectedPublicSlot);
+        if (check.unavailable || isCeoLocked) {
+          selectedPublicSlot = "";
+          document.getElementById('selected-slot-input').value = "";
+        }
+      }
+
+      slotGrid.innerHTML = '';
+      dropdown.innerHTML = '<option value="">-- Choose an open slot --</option>';
+      scheduleBoard.innerHTML = '';
+
+      let occupiedCount = 0;
+
+      TIME_SLOTS.forEach(slot => {
+        const statusInfo = getSlotStatus(slot);
+        if (statusInfo.unavailable) occupiedCount++;
+
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        const shortLabel = slot.split(' - ')[0];
+
+        if (statusInfo.unavailable || isCeoLocked) {
+          btn.disabled = true;
+          btn.className = "p-2.5 rounded-xl border border-slate-200 bg-slate-100 text-slate-400 text-left cursor-not-allowed flex flex-col justify-between";
+          btn.innerHTML = `
+            <span class="text-xs font-bold line-through">${shortLabel}</span>
+            <span class="text-[10px] font-semibold uppercase tracking-wide mt-0.5 text-slate-400">
+              ${statusInfo.unavailable ? statusInfo.reason : 'Locked'}
+            </span>
+          `;
+        } else {
+          const isSelected = selectedPublicSlot === slot;
+          btn.className = isSelected
+            ? "p-2.5 rounded-xl border-2 border-indigo-600 bg-indigo-600 text-white text-left shadow-sm transition-all flex flex-col justify-between"
+            : "p-2.5 rounded-xl border border-slate-300 bg-white hover:border-indigo-500 hover:bg-indigo-50/40 text-slate-800 text-left transition-all flex flex-col justify-between";
+          btn.innerHTML = `
+            <span class="text-xs font-bold">${shortLabel}</span>
+            <span class="text-[10px] font-medium mt-0.5 ${isSelected ? 'text-indigo-100' : 'text-emerald-600'}">
+              ${isSelected ? 'Selected' : 'Open'}
+            </span>
+          `;
+          btn.onclick = () => selectPublicSlot(slot);
+
+          const opt = document.createElement('option');
+          opt.value = slot;
+          opt.textContent = slot;
+          if (isSelected) opt.selected = true;
+          dropdown.appendChild(opt);
+        }
+        slotGrid.appendChild(btn);
+
+        const row = document.createElement('div');
+        row.className = "px-5 py-3.5 flex items-start justify-between gap-3 hover:bg-slate-50/80 transition";
+
+        if (statusInfo.booking) {
+          const b = statusInfo.booking;
+          const badgeStyle = b.status === 'Completed'
+            ? 'bg-emerald-100 text-emerald-800 border-emerald-200'
+            : b.status === 'In Progress'
+              ? 'bg-amber-100 text-amber-800 border-amber-200'
+              : b.status === 'Cancelled'
+                ? 'bg-rose-100 text-rose-800 border-rose-200'
+                : 'bg-indigo-100 text-indigo-800 border-indigo-200';
+          const entryNoteHtml = b.entryTag
+            ? `<div class="text-[10px] font-semibold text-indigo-700 mt-0.5">${escapeHtml(b.entryTag)}</div>`
+            : '';
+          row.innerHTML = `
+            <div class="min-w-0">
+              <div class="text-xs font-bold text-slate-900 font-mono">${slot}</div>
+              <div class="text-xs font-semibold text-slate-800 mt-0.5">${escapeHtml(b.company)} <span class="text-slate-500 font-normal">• ${escapeHtml(b.visitorName)}</span></div>
+              <div class="text-[11px] text-slate-500 mt-0.5 break-words">${escapeHtml(b.purpose)}</div>
+              ${entryNoteHtml}
+            </div>
+            <span class="shrink-0 px-2.5 py-1 rounded-full text-[11px] font-bold border ${badgeStyle}">
+              ${b.status}
+            </span>
+          `;
+        } else if (statusInfo.reason === 'Blocked') {
+          row.innerHTML = `
+            <div>
+              <div class="text-xs font-bold text-slate-500 font-mono">${slot}</div>
+              <div class="text-[11px] text-slate-400 mt-0.5">Slot blocked by office</div>
+            </div>
+            <span class="shrink-0 px-2.5 py-1 rounded-full text-[11px] font-semibold bg-slate-100 text-slate-500 border border-slate-200">
+              Blocked
+            </span>
+          `;
+        } else {
+          row.innerHTML = `
+            <div>
+              <div class="text-xs font-bold text-slate-800 font-mono">${slot}</div>
+              <div class="text-[11px] text-emerald-600 font-medium mt-0.5">Available for today</div>
+            </div>
+            <span class="shrink-0 px-2.5 py-1 rounded-full text-[11px] font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200">
+              Open
+            </span>
+          `;
+        }
+        scheduleBoard.appendChild(row);
+      });
+
+      document.getElementById('board-occupancy-badge').textContent = `${occupiedCount} / ${TIME_SLOTS.length} Occupied`;
+    }
+
+    function selectPublicSlot(slot) {
+      selectedPublicSlot = slot;
+      document.getElementById('selected-slot-input').value = slot;
+      renderPublicPortal();
+    }
+
+    function syncSlotFromDropdown(val) {
+      selectedPublicSlot = val;
+      document.getElementById('selected-slot-input').value = val;
+      renderPublicPortal();
+    }
+
+    function handlePublicBookingSubmit(e) {
+      e.preventDefault();
+
+      if (appState.ceoStatus === 'Out of Office') {
+        showToast("Public bookings are locked while CEO is Out of Office.", "error");
+        renderPublicPortal();
+        return;
+      }
+
+      const slot = document.getElementById('selected-slot-input').value;
+      if (!slot) {
+        showToast("Please select a time slot for today.", "error");
+        return;
+      }
+
+      const check = getSlotStatus(slot);
+      if (check.unavailable) {
+        showToast("Selected slot is no longer available. Please pick another.", "error");
+        renderPublicPortal();
+        return;
+      }
+
+      const visitorName = document.getElementById('visitor-name').value.trim();
+      const company = document.getElementById('visitor-company').value.trim();
+      const contact = document.getElementById('visitor-contact').value.trim();
+      const purpose = document.getElementById('visitor-purpose').value.trim();
+
+      const bookingId = "APT-" + Math.floor(1000 + Math.random() * 9000);
+      appState.bookings.push({
+        id: bookingId,
+        slot,
+        visitorName,
+        company,
+        contact,
+        purpose,
+        status: "Scheduled",
+        remarks: "",
+        enteredAt: "",
+        exitedAt: "",
+        isEarlyEntry: false,
+        entryTag: "",
+        createdAt: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+      });
+
+      selectedPublicSlot = "";
+      document.getElementById('public-booking-form').reset();
+      document.getElementById('selected-slot-input').value = "";
+
+      saveStateToLocal();
+      renderAll();
+
+      document.getElementById('conf-id').textContent = bookingId;
+      document.getElementById('conf-date').textContent = getFormattedDate();
+      document.getElementById('conf-slot').textContent = slot;
+      document.getElementById('conf-visitor').textContent = `${visitorName} (${company})`;
+      document.getElementById('confirmation-modal').classList.remove('hidden');
+    }
+
+    function closeConfirmationModal() {
+      document.getElementById('confirmation-modal').classList.add('hidden');
+    }
+
+    // Receptionist Controls
+    function setCeoStatus(newStatus) {
+      appState.ceoStatus = newStatus;
+      if (newStatus === 'Available') {
+        appState.statusNote = "Accepting scheduled & same-day vendor appointments.";
+      } else if (newStatus === 'Busy') {
+        appState.statusNote = "CEO is currently Busy with visitors or in a meeting. Same-day bookings remain open.";
+      } else if (newStatus === 'On Telephone') {
+        appState.statusNote = "CEO is currently On Telephone. Same-day bookings remain open.";
+      } else if (newStatus === 'Out of Office') {
+        appState.statusNote = "CEO is Out of Office for today. Public bookings are locked.";
+      }
+      const noteInput = document.getElementById('rec-status-note-input');
+      if (noteInput) noteInput.value = appState.statusNote;
+      saveStateToLocal();
+      renderAll();
+      showToast(`CEO status updated to "${newStatus}".`, "success");
+    }
+
+    function updateStatusNote() {
+      const input = document.getElementById('rec-status-note-input');
+      appState.statusNote = input.value.trim() || "Live office status updated.";
+      saveStateToLocal();
+      renderAll();
+      showToast("Public status note updated.", "success");
+    }
+
+    function cancelRemainingDayBookings() {
+      let cancelledCount = 0;
+      const stamp = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+      appState.bookings.forEach(b => {
+        if (b.status === 'Scheduled' || b.status === 'In Progress') {
+          b.status = 'Cancelled';
+          b.exitedAt = stamp;
+          b.remarks = b.remarks
+            ? `${b.remarks} | Cancelled: CEO Out of Office (${stamp})`
+            : `Cancelled: CEO Out of Office (${stamp})`;
+          cancelledCount++;
+        }
+      });
+      saveStateToLocal();
+      renderAll();
+      showToast(
+        cancelledCount > 0
+          ? `Marked ${cancelledCount} remaining same-day appointment(s) as Cancelled & No-Show.`
+          : "No remaining scheduled/active appointments to cancel today.",
+        "info"
+      );
+    }
+
+    function prefillFormFromBookedId(bookingId, focusForm = false) {
+      const hiddenIdEl = document.getElementById('prefill-booking-id');
+      const bannerEl = document.getElementById('prefill-active-banner');
+      const bannerTitle = document.getElementById('prefill-banner-title');
+      const bannerMeta = document.getElementById('prefill-banner-meta');
+      const submitBtn = document.getElementById('walkin-submit-btn');
+      const slotSelect = document.getElementById('walkin-slot');
+      const entryTimeInput = document.getElementById('walkin-entry-time');
+
+      if (!bookingId) {
+        clearEntryFormPrefill(false);
+        return;
+      }
+
+      const booking = appState.bookings.find(b => b.id === bookingId);
+      if (!booking) return;
+
+      hiddenIdEl.value = booking.id;
+      document.getElementById('walkin-name').value = booking.visitorName || '';
+      document.getElementById('walkin-company').value = booking.company || '';
+      document.getElementById('walkin-contact').value = booking.contact || '';
+      document.getElementById('walkin-purpose').value = booking.purpose || '';
+      if (entryTimeInput) {
+        entryTimeInput.value = getCurrentTimeInputValue();
+      }
+
+      let hasSlotOption = Array.from(slotSelect.options).some(o => o.value === booking.slot);
+      if (!hasSlotOption && booking.slot) {
+        const opt = document.createElement('option');
+        opt.value = booking.slot;
+        opt.textContent = `${booking.slot} (Booked Slot)`;
+        slotSelect.insertBefore(opt, slotSelect.options[1] || null);
+      }
+      slotSelect.value = booking.slot;
+
+      bannerTitle.textContent = `Prefilled Arrival: ${booking.visitorName} (${booking.company})`;
+      bannerMeta.textContent = `• Booked Slot: ${booking.slot} (#${booking.id}) • Current Status: ${booking.status}`;
+      bannerEl.classList.remove('hidden');
+      submitBtn.textContent = "Admit Early / Check In";
+
+      if (focusForm) {
+        document.getElementById('reception-walkin-form').scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }
+      showToast(`Prefilled details for ${booking.visitorName} (${booking.slot}).`, "info");
+    }
+
+    function clearEntryFormPrefill(resetFields = true) {
+      document.getElementById('prefill-booking-id').value = '';
+      const prefillSelect = document.getElementById('prefill-booked-slot-select');
+      if (prefillSelect) prefillSelect.value = '';
+      document.getElementById('prefill-active-banner').classList.add('hidden');
+      document.getElementById('walkin-submit-btn').textContent = "Add Walk-In";
+      if (resetFields) {
+        document.getElementById('reception-walkin-form').reset();
+        const entryTimeInput = document.getElementById('walkin-entry-time');
+        if (entryTimeInput) entryTimeInput.value = getCurrentTimeInputValue();
+        const busyCheckbox = document.getElementById('walkin-set-busy');
+        if (busyCheckbox) busyCheckbox.checked = true;
+      }
+    }
+
+    function admitBookingEarlyOrNow(bookingId, customEntryTime24 = null, setBusy = true) {
+      const booking = appState.bookings.find(b => b.id === bookingId);
+      if (!booking) return;
+
+      const entryTime24 = customEntryTime24 || getCurrentTimeInputValue();
+      const timing = evaluateEntryTiming(booking.slot, entryTime24);
+
+      booking.status = 'In Progress';
+      booking.enteredAt = timing.enteredAt;
+      booking.isEarlyEntry = timing.isEarly;
+      booking.entryTag = timing.entryTag;
+
+      if (setBusy) {
+        appState.ceoStatus = 'Busy';
+        appState.statusNote = timing.isEarly
+          ? `CEO in early meeting with ${booking.visitorName} (${booking.company}) — entered at ${timing.enteredAt} (booked ${booking.slot}).`
+          : `CEO in meeting with ${booking.visitorName} (${booking.company}) — entered at ${timing.enteredAt}.`;
+      }
+
+      saveStateToLocal();
+      renderAll();
+      showToast(
+        timing.isEarly
+          ? `${booking.visitorName} admitted early at ${timing.enteredAt} (booked slot ${booking.slot} kept).`
+          : `${booking.visitorName} marked In Progress at ${timing.enteredAt}.`,
+        "success"
+      );
+    }
+
+    function handleWalkInSubmit(e) {
+      e.preventDefault();
+      const prefillId = document.getElementById('prefill-booking-id').value.trim();
+      const visitorName = document.getElementById('walkin-name').value.trim();
+      const company = document.getElementById('walkin-company').value.trim();
+      const contact = document.getElementById('walkin-contact').value.trim();
+      const slot = document.getElementById('walkin-slot').value;
+      const purpose = document.getElementById('walkin-purpose').value.trim();
+      const entryTime24 = document.getElementById('walkin-entry-time').value || getCurrentTimeInputValue();
+      const shouldSetBusy = document.getElementById('walkin-set-busy').checked;
+
+      if (!slot) return;
+
+      if (prefillId) {
+        const existing = appState.bookings.find(b => b.id === prefillId);
+        if (existing) {
+          existing.visitorName = visitorName;
+          existing.company = company;
+          existing.contact = contact;
+          existing.purpose = purpose;
+          if (existing.slot !== slot) {
+            const slotCheck = getSlotStatus(slot);
+            if (slotCheck.unavailable) {
+              showToast("Target slot is already booked or blocked.", "error");
+              return;
+            }
+            existing.slot = slot;
+          }
+          const timing = evaluateEntryTiming(existing.slot, entryTime24);
+          existing.status = 'In Progress';
+          existing.enteredAt = timing.enteredAt;
+          existing.isEarlyEntry = timing.isEarly;
+          existing.entryTag = timing.entryTag;
+
+          if (shouldSetBusy) {
+            appState.ceoStatus = 'Busy';
+            appState.statusNote = timing.isEarly
+              ? `CEO in early meeting with ${existing.visitorName} (${existing.company}) — entered at ${timing.enteredAt} (booked ${existing.slot}).`
+              : `CEO in meeting with ${existing.visitorName} (${existing.company}) — entered at ${timing.enteredAt}.`;
+          }
+
+          clearEntryFormPrefill();
+          saveStateToLocal();
+          renderAll();
+          showToast(
+            timing.isEarly
+              ? `Early entry logged for ${existing.visitorName} at ${timing.enteredAt} (slot ${existing.slot} preserved).`
+              : `Check-in recorded for ${existing.visitorName} at ${timing.enteredAt}.`,
+            "success"
+          );
+          return;
+        }
+      }
+
+      const check = getSlotStatus(slot);
+      if (check.unavailable) {
+        showToast("That time slot is already booked or blocked.", "error");
+        return;
+      }
+
+      const bookingId = "WLK-" + Math.floor(1000 + Math.random() * 9000);
+      const timing = evaluateEntryTiming(slot, entryTime24);
+      appState.bookings.push({
+        id: bookingId,
+        slot,
+        visitorName,
+        company,
+        contact,
+        purpose,
+        status: shouldSetBusy ? "In Progress" : "Scheduled",
+        enteredAt: timing.enteredAt,
+        exitedAt: "",
+        isEarlyEntry: timing.isEarly,
+        entryTag: timing.entryTag,
+        remarks: "",
+        createdAt: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+      });
+
+      if (shouldSetBusy) {
+        appState.ceoStatus = 'Busy';
+        appState.statusNote = timing.isEarly
+          ? `CEO in early meeting with ${visitorName} (${company}) — entered at ${timing.enteredAt} (slot ${slot}).`
+          : `CEO in meeting with ${visitorName} (${company}) — entered at ${timing.enteredAt}.`;
+      }
+
+      clearEntryFormPrefill();
+      saveStateToLocal();
+      renderAll();
+      showToast(`Walk-in added for ${slot}.`, "success");
+    }
+
+    function updateBookingStatus(bookingId, newStatus) {
+      const booking = appState.bookings.find(b => b.id === bookingId);
+      if (!booking) return;
+      booking.status = newStatus;
+      const nowLabel = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+      if (newStatus === 'In Progress' && !booking.entryTag) {
+        const timing = evaluateEntryTiming(booking.slot, getCurrentTimeInputValue());
+        booking.enteredAt = timing.enteredAt;
+        booking.isEarlyEntry = timing.isEarly;
+        booking.entryTag = timing.entryTag;
+      }
+      if ((newStatus === 'Completed' || newStatus === 'Cancelled') && !booking.exitedAt) {
+        booking.exitedAt = nowLabel;
+      }
+      saveStateToLocal();
+      renderAll();
+      showToast(`Appointment ${bookingId} updated to ${newStatus}.`, "info");
+    }
+
+    function markVisitorOutAndSaveRemark(bookingId, remarkText) {
+      const booking = appState.bookings.find(b => b.id === bookingId);
+      if (!booking) return;
+      const outTime = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+      booking.exitedAt = outTime;
+      booking.status = 'Completed';
+      const trimmed = (remarkText || '').trim();
+      if (trimmed) {
+        booking.remarks = trimmed;
+      } else if (!booking.remarks) {
+        booking.remarks = `Visitor checked out at ${outTime}`;
+      }
+      saveStateToLocal();
+      renderAll();
+      showToast(`${booking.visitorName} marked Out (${outTime}) & remark saved.`, "success");
+    }
+
+    function saveBookingRemark(bookingId, remarkText) {
+      const booking = appState.bookings.find(b => b.id === bookingId);
+      if (!booking) return;
+      booking.remarks = remarkText.trim();
+      saveStateToLocal();
+      refreshEodReport();
+      showToast("Visitor out remark saved.", "success");
+    }
+
+    function deleteBooking(bookingId) {
+      if (document.getElementById('prefill-booking-id').value === bookingId) {
+        clearEntryFormPrefill();
+      }
+      appState.bookings = appState.bookings.filter(b => b.id !== bookingId);
+      saveStateToLocal();
+      renderAll();
+      showToast(`Removed appointment ${bookingId}.`, "info");
+    }
+
+    function toggleBlockSlot(slot) {
+      const statusInfo = getSlotStatus(slot);
+      if (statusInfo.booking) {
+        showToast("Cannot block a slot with an active booking. Cancel or remove it first.", "error");
+        return;
+      }
+      const idx = appState.blockedSlots.indexOf(slot);
+      if (idx > -1) {
+        appState.blockedSlots.splice(idx, 1);
+        showToast(`Unblocked ${slot}.`, "info");
+      } else {
+        appState.blockedSlots.push(slot);
+        showToast(`Blocked ${slot}.`, "info");
+      }
+      saveStateToLocal();
+      renderAll();
+    }
+
+    function renderReceptionDashboard() {
+      ['Available', 'Busy', 'On Telephone', 'Out of Office'].forEach(st => {
+        const btn = document.getElementById(`btn-status-${st}`);
+        if (!btn) return;
+        const isActive = appState.ceoStatus === st;
+        if (isActive) {
+          if (st === 'Available') btn.className = "p-4 rounded-2xl border-2 border-emerald-600 bg-emerald-50/90 text-left shadow-sm transition-all flex flex-col justify-between gap-3";
+          if (st === 'Busy') btn.className = "p-4 rounded-2xl border-2 border-amber-500 bg-amber-50/90 text-left shadow-sm transition-all flex flex-col justify-between gap-3";
+          if (st === 'On Telephone') btn.className = "p-4 rounded-2xl border-2 border-sky-600 bg-sky-50/90 text-left shadow-sm transition-all flex flex-col justify-between gap-3";
+          if (st === 'Out of Office') btn.className = "p-4 rounded-2xl border-2 border-rose-600 bg-rose-50/90 text-left shadow-sm transition-all flex flex-col justify-between gap-3";
+        } else {
+          btn.className = "p-4 rounded-2xl border-2 border-slate-200 bg-white hover:border-slate-300 text-left transition-all flex flex-col justify-between gap-3 opacity-80 hover:opacity-100";
+        }
+      });
+
+      const oooBanner = document.getElementById('ooo-day-actions');
+      if (oooBanner) {
+        if (appState.ceoStatus === 'Out of Office') {
+          oooBanner.classList.remove('hidden');
+        } else {
+          oooBanner.classList.add('hidden');
+        }
+      }
+
+      document.getElementById('rec-status-note-input').value = appState.statusNote || "";
+
+      const walkinSelect = document.getElementById('walkin-slot');
+      const prefillSelect = document.getElementById('prefill-booked-slot-select');
+      const currentPrefillId = document.getElementById('prefill-booking-id').value;
+      const entryTimeInput = document.getElementById('walkin-entry-time');
+      if (entryTimeInput && !entryTimeInput.value) {
+        entryTimeInput.value = getCurrentTimeInputValue();
+      }
+
+      const blockerGrid = document.getElementById('reception-slot-blocker');
+      walkinSelect.innerHTML = '<option value="">Select Slot *</option>';
+      blockerGrid.innerHTML = '';
+
+      prefillSelect.innerHTML = '<option value="">-- Select Booked Appointment on Arrival --</option>';
+      const bookedCandidates = [...appState.bookings]
+        .filter(b => b.status !== 'Cancelled')
+        .sort((a, b) => TIME_SLOTS.indexOf(a.slot) - TIME_SLOTS.indexOf(b.slot));
+      bookedCandidates.forEach(b => {
+        const opt = document.createElement('option');
+        opt.value = b.id;
+        opt.textContent = `${b.slot} — ${b.visitorName} (${b.company}) [${b.status}]`;
+        if (currentPrefillId === b.id) opt.selected = true;
+        prefillSelect.appendChild(opt);
+      });
+
+      TIME_SLOTS.forEach(slot => {
+        const info = getSlotStatus(slot);
+        if (!info.unavailable) {
+          const opt = document.createElement('option');
+          opt.value = slot;
+          opt.textContent = slot;
+          walkinSelect.appendChild(opt);
+        }
+
+        const shortTime = slot.split(' - ')[0];
+        const bBtn = document.createElement('button');
+        bBtn.type = 'button';
+        if (info.booking) {
+          bBtn.disabled = true;
+          bBtn.className = "p-2.5 rounded-xl border border-indigo-200 bg-indigo-50 text-indigo-800 text-left cursor-not-allowed";
+          bBtn.innerHTML = `<div class="text-xs font-bold">${shortTime}</div><div class="text-[10px] font-semibold">Booked</div>`;
+        } else if (info.reason === 'Blocked') {
+          bBtn.className = "p-2.5 rounded-xl border border-rose-300 bg-rose-50 hover:bg-rose-100 text-rose-800 text-left transition";
+          bBtn.innerHTML = `<div class="text-xs font-bold">${shortTime}</div><div class="text-[10px] font-semibold">Blocked • Unblock</div>`;
+          bBtn.onclick = () => toggleBlockSlot(slot);
+        } else {
+          bBtn.className = "p-2.5 rounded-xl border border-slate-200 bg-white hover:border-slate-400 text-slate-700 text-left transition";
+          bBtn.innerHTML = `<div class="text-xs font-bold">${shortTime}</div><div class="text-[10px] text-emerald-600 font-semibold">Open • Block</div>`;
+          bBtn.onclick = () => toggleBlockSlot(slot);
+        }
+        blockerGrid.appendChild(bBtn);
+      });
+
+      const listContainer = document.getElementById('reception-bookings-list');
+      const sortedBookings = [...appState.bookings].sort(
+        (a, b) => TIME_SLOTS.indexOf(a.slot) - TIME_SLOTS.indexOf(b.slot)
+      );
+
+      const completedCount = sortedBookings.filter(b => b.status === 'Completed').length;
+      document.getElementById('stat-pill-total').textContent = `Total: ${sortedBookings.length}`;
+      document.getElementById('stat-pill-done').textContent = `Completed: ${completedCount}`;
+
+      if (sortedBookings.length === 0) {
+        listContainer.innerHTML = `
+          <div class="p-10 text-center text-slate-400 text-sm">
+            No appointments recorded for today's cycle yet.
+          </div>
+        `;
+      } else {
+        listContainer.innerHTML = '';
+        sortedBookings.forEach(b => {
+          const card = document.createElement('div');
+          card.className = "p-5 space-y-3 hover:bg-slate-50/60 transition";
+
+          let badgeHtml = '<span class="px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-indigo-100 text-indigo-800">Scheduled</span>';
+          if (b.status === 'Completed') {
+            badgeHtml = '<span class="px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-emerald-100 text-emerald-800">Completed</span>';
+          } else if (b.status === 'In Progress') {
+            badgeHtml = '<span class="px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-amber-100 text-amber-800">In Progress / Entered</span>';
+          } else if (b.status === 'Cancelled') {
+            badgeHtml = '<span class="px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-rose-100 text-rose-800">Cancelled & No-Show</span>';
+          }
+
+          const earlyPillHtml = b.entryTag
+            ? `<span class="px-2.5 py-0.5 rounded-full text-[11px] font-bold ${b.isEarlyEntry ? 'bg-amber-100 text-amber-900 border border-amber-300' : 'bg-slate-100 text-slate-700 border border-slate-200'}">${escapeHtml(b.entryTag)}</span>`
+            : '';
+
+          const exitPillHtml = b.exitedAt
+            ? `<span class="px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-emerald-50 text-emerald-800 border border-emerald-200">Out at ${escapeHtml(b.exitedAt)}</span>`
+            : '';
+
+          const slotStartMins = parseSlotStartMinutes(b.slot);
+          const nowMins = new Date().getHours() * 60 + new Date().getMinutes();
+          const isBeforeSlotTime = slotStartMins !== null && nowMins < slotStartMins;
+          const admitBtnLabel = isBeforeSlotTime ? 'Admit Early / Mark In' : 'Mark In / Admit';
+
+          card.innerHTML = `
+            <div class="flex flex-wrap items-start justify-between gap-3">
+              <div>
+                <div class="flex items-center gap-2 flex-wrap">
+                  <span class="font-mono text-xs font-bold text-indigo-700 bg-indigo-50 px-2 py-0.5 rounded border border-indigo-200">${b.slot}</span>
+                  <span class="font-mono text-[11px] text-slate-400">#${b.id}</span>
+                  ${badgeHtml}
+                  ${earlyPillHtml}
+                  ${exitPillHtml}
+                </div>
+                <h4 class="text-sm font-bold text-slate-900 mt-1.5">${escapeHtml(b.visitorName)} — <span class="text-slate-600 font-semibold">${escapeHtml(b.company)}</span></h4>
+                <p class="text-xs text-slate-500 mt-0.5">Contact: ${escapeHtml(b.contact)}</p>
+                <p class="text-xs text-slate-700 mt-1.5 bg-slate-100/80 p-2 rounded-lg border border-slate-200/70">
+                  <strong class="text-slate-600">Agenda:</strong> ${escapeHtml(b.purpose)}
+                </p>
+              </div>
+
+              <div class="flex flex-wrap items-center gap-2 shrink-0">
+                ${b.status !== 'Cancelled' ? `
+                  <button type="button" onclick="prefillFormFromBookedId('${b.id}', true)"
+                    class="px-2.5 py-1.5 rounded-lg border border-indigo-200 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 text-xs font-semibold transition">
+                    Prefill Form
+                  </button>
+                  <button type="button" onclick="admitBookingEarlyOrNow('${b.id}', null, true)"
+                    class="px-3 py-1.5 rounded-lg ${isBeforeSlotTime ? 'bg-amber-600 hover:bg-amber-700' : 'bg-emerald-600 hover:bg-emerald-700'} text-white text-xs font-semibold transition shadow-sm">
+                    ${admitBtnLabel}
+                  </button>
+                ` : ''}
+                <label for="status-select-${b.id}" class="text-[11px] font-semibold text-slate-500">Status:</label>
+                <select id="status-select-${b.id}" onchange="updateBookingStatus('${b.id}', this.value)"
+                  class="px-3 py-1.5 rounded-lg border border-slate-300 bg-white text-xs font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                  <option value="Scheduled" ${b.status === 'Scheduled' ? 'selected' : ''}>Scheduled</option>
+                  <option value="In Progress" ${b.status === 'In Progress' ? 'selected' : ''}>In Progress / Entered</option>
+                  <option value="Completed" ${b.status === 'Completed' ? 'selected' : ''}>Completed</option>
+                  <option value="Cancelled" ${b.status === 'Cancelled' ? 'selected' : ''}>Cancelled & No-Show</option>
+                </select>
+                <button type="button" onclick="deleteBooking('${b.id}')" title="Remove appointment"
+                  class="px-2.5 py-1.5 rounded-lg border border-rose-200 text-rose-600 hover:bg-rose-50 text-xs font-semibold transition">
+                  Delete
+                </button>
+              </div>
+            </div>
+
+            <!-- Visitor Out Remark & Checkout Row -->
+            <div class="flex flex-col sm:flex-row gap-2 pt-1">
+              <input type="text" id="remark-input-${b.id}" value="${escapeHtml(b.remarks || '')}"
+                placeholder="Visitor Out Remark / departure notes..."
+                class="flex-1 px-3 py-2 rounded-lg border border-slate-300 text-xs focus:outline-none focus:ring-2 focus:ring-indigo-500" />
+              <button type="button" onclick="markVisitorOutAndSaveRemark('${b.id}', document.getElementById('remark-input-${b.id}').value)"
+                class="px-3.5 py-2 rounded-lg bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-semibold shrink-0 transition">
+                Mark Out &amp; Save Remark
+              </button>
+              <button type="button" onclick="saveBookingRemark('${b.id}', document.getElementById('remark-input-${b.id}').value)"
+                class="px-3.5 py-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-white text-xs font-semibold shrink-0 transition">
+                Save Remark
+              </button>
+            </div>
+          `;
+          listContainer.appendChild(card);
+        });
+      }
+
+      refreshEodReport();
+    }
+
+    function refreshEodReport() {
+      const now = new Date();
+      const dateEl = document.getElementById('rep-date-label');
+      const timeEl = document.getElementById('rep-time-label');
+      if (dateEl) dateEl.textContent = getFormattedDate(now);
+      if (timeEl) timeEl.textContent = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+      const sorted = [...appState.bookings].sort(
+        (a, b) => TIME_SLOTS.indexOf(a.slot) - TIME_SLOTS.indexOf(b.slot)
+      );
+
+      const total = sorted.length;
+      const completed = sorted.filter(b => b.status === 'Completed').length;
+      const scheduled = sorted.filter(b => b.status === 'Scheduled').length;
+      const cancelled = sorted.filter(b => b.status === 'Cancelled').length;
+
+      document.getElementById('rep-total').textContent = total;
+      document.getElementById('rep-completed').textContent = completed;
+      document.getElementById('rep-scheduled').textContent = scheduled;
+      document.getElementById('rep-cancelled').textContent = cancelled;
+
+      const tbody = document.getElementById('rep-table-body');
+      tbody.innerHTML = '';
+
+      if (sorted.length === 0) {
+        tbody.innerHTML = `
+          <tr>
+            <td colspan="5" class="py-6 px-4 text-center text-slate-400">
+              No appointments logged for today's cycle.
+            </td>
+          </tr>
+        `;
+        return;
+      }
+
+      sorted.forEach(b => {
+        const tr = document.createElement('tr');
+        const statusLabel = b.status === 'Cancelled' ? 'Cancelled & No-Show' : b.status;
+        const statusColor = b.status === 'Completed'
+          ? 'text-emerald-700'
+          : b.status === 'Cancelled'
+            ? 'text-rose-700'
+            : 'text-indigo-700';
+
+        const timeMetaParts = [];
+        if (b.entryTag) timeMetaParts.push(b.entryTag);
+        if (b.exitedAt) timeMetaParts.push(`Exited at ${b.exitedAt}`);
+
+        tr.innerHTML = `
+          <td class="py-3 px-3.5 font-mono font-semibold text-slate-800 whitespace-nowrap">${b.slot}</td>
+          <td class="py-3 px-3.5">
+            <div class="font-bold text-slate-900">${escapeHtml(b.visitorName)}</div>
+            <div class="text-slate-500">${escapeHtml(b.company)}</div>
+          </td>
+          <td class="py-3 px-3.5 text-slate-700 max-w-xs">${escapeHtml(b.purpose)}</td>
+          <td class="py-3 px-3.5 font-bold ${statusColor}">
+            <div>${statusLabel}</div>
+            ${timeMetaParts.length ? `<div class="text-[10px] font-semibold text-slate-500 mt-0.5">${escapeHtml(timeMetaParts.join(' • '))}</div>` : ''}
+          </td>
+          <td class="py-3 px-3.5 text-slate-700 italic">${b.remarks ? escapeHtml(b.remarks) : '<span class="text-slate-400 not-italic">No out remark</span>'}</td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    function copyReportToClipboard() {
+      const dateStr = getFormattedDate();
+      const sorted = [...appState.bookings].sort(
+        (a, b) => TIME_SLOTS.indexOf(a.slot) - TIME_SLOTS.indexOf(b.slot)
+      );
+      const completed = sorted.filter(b => b.status === 'Completed').length;
+      const scheduled = sorted.filter(b => b.status === 'Scheduled').length;
+      const cancelled = sorted.filter(b => b.status === 'Cancelled').length;
+
+      const lines = [
+        `OFFICE OF THE CHIEF EXECUTIVE OFFICER — END OF THE DAY REPORT`,
+        `Date: ${dateStr}`,
+        `----------------------------------------------------------------`,
+        `Total Booked: ${sorted.length} | Completed: ${completed} | Pending/Scheduled: ${scheduled} | Cancelled & No-Show: ${cancelled}`,
+        `----------------------------------------------------------------`
+      ];
+
+      if (sorted.length === 0) {
+        lines.push("No appointments recorded today.");
+      } else {
+        sorted.forEach((b, idx) => {
+          const st = b.status === 'Cancelled' ? 'Cancelled & No-Show' : b.status;
+          lines.push(`${idx + 1}. [${b.slot}] ${b.visitorName} (${b.company}) — ${st}`);
+          lines.push(`   Agenda: ${b.purpose}`);
+          if (b.entryTag) lines.push(`   Entry: ${b.entryTag}`);
+          if (b.exitedAt) lines.push(`   Out Time: ${b.exitedAt}`);
+          lines.push(`   Visitor Out Remark: ${b.remarks || 'N/A'}`);
+        });
+      }
+
+      const ta = document.createElement("textarea");
+      ta.value = lines.join("\n");
+      document.body.appendChild(ta);
+      ta.select();
+      try {
+        document.execCommand("copy");
+        showToast("End of the Day summary copied to clipboard.", "success");
+      } catch (err) {
+        showToast("Unable to copy summary.", "error");
+      }
+      document.body.removeChild(ta);
+    }
+
+    function renderAll() {
+      renderPublicPortal();
+      if (isReceptionUnlocked) {
+        renderReceptionDashboard();
+      }
+    }
+
+    function escapeHtml(str) {
+      if (!str) return '';
+      return String(str)
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+    }
+
+    function showToast(message, type = "info") {
+      const container = document.getElementById('toast-container');
+      const toast = document.createElement('div');
+      const palette = {
+        success: "bg-emerald-900 text-white border-emerald-700",
+        error: "bg-rose-900 text-white border-rose-700",
+        info: "bg-slate-900 text-white border-slate-700"
+      };
+      toast.className = `pointer-events-auto px-4 py-3 rounded-xl border shadow-xl text-xs font-semibold flex items-center justify-between gap-3 transition-all ${palette[type] || palette.info}`;
+      toast.innerHTML = `<span>${escapeHtml(message)}</span>`;
+      container.appendChild(toast);
+      setTimeout(() => {
+        toast.style.opacity = '0';
+        setTimeout(() => toast.remove(), 300);
+      }, 3600);
+    }
+
+    window.addEventListener('DOMContentLoaded', () => {
+      initState();
+      renderAll();
+      startLiveClock();
+    });
+
+    window.addEventListener('pageshow', () => {
+      renderAll();
+    });
+
+    window.addEventListener('beforeunload', () => {
+      persistState(false);
+    });
+  </script>
+</body>
+</html>
